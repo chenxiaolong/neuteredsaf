@@ -1,0 +1,30 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+        package="io.noobdev.neuteredsaf">
+
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+
+    <application>
+        <activity
+            android:name=".DocumentsActivity"
+            android:exported="false"
+            android:icon="@drawable/ic_doc_text"
+            android:theme="@style/DocumentsTheme" />
+
+        <provider
+            android:name=".RecentsProvider"
+            android:authorities="io.noobdev.neuteredsaf.recents"
+            android:exported="false" />
+
+        <provider
+            android:name=".providers.ExternalStorageProvider"
+            android:authorities="io.noobdev.neuteredsaf.externalstorage.documents"
+            android:exported="false" />
+
+        <receiver android:name=".receivers.MountReceiver">
+            <intent-filter>
+                <action android:name="android.os.storage.action.VOLUME_STATE_CHANGED" />
+            </intent-filter>
+        </receiver>
+    </application>
+</manifest>
