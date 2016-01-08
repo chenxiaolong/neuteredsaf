@@ -13,12 +13,12 @@
 
         <provider
             android:name=".RecentsProvider"
-            android:authorities="io.noobdev.neuteredsaf.recents"
+            android:authorities="${applicationId}.neuteredsaf.recents"
             android:exported="false" />
 
         <provider
             android:name=".providers.ExternalStorageProvider"
-            android:authorities="io.noobdev.neuteredsaf.externalstorage.documents"
+            android:authorities="${applicationId}.neuteredsaf.externalstorage.documents"
             android:exported="false" />
 
         <receiver android:name=".receivers.MountReceiver">

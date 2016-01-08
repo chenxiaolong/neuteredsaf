@@ -41,6 +41,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
+import io.noobdev.neuteredsaf.DocumentsApplication;
 import io.noobdev.neuteredsaf.VolumeUtils;
 import io.noobdev.neuteredsaf.VolumeUtils.Volume;
 import io.noobdev.neuteredsaf.compat.DocumentsContractCompat;
@@ -58,7 +59,7 @@ public class ExternalStorageProvider extends DocumentsProviderCompat {
 
     private static final boolean LOG_INOTIFY = false;
 
-    public static final String AUTHORITY = "io.noobdev.neuteredsaf.externalstorage.documents";
+    public static final String AUTHORITY_SUFFIX = ".neuteredsaf.externalstorage.documents";
 
     // docId format: root:path/to/file
 
@@ -93,8 +94,14 @@ public class ExternalStorageProvider extends DocumentsProviderCompat {
     @GuardedBy("mObservers")
     private final Map<File, DirectoryObserver> mObservers = Maps.newHashMap();
 
+    public static String getAuthority() {
+        return DocumentsApplication.getApplicationId() + AUTHORITY_SUFFIX;
+    }
+
     @Override
     public boolean onCreate() {
+        DocumentsApplication.setApplicationId(getContext());
+
         mRoots = Lists.newArrayList();
         mIdToRoot = Maps.newHashMap();
         mIdToPath = Maps.newHashMap();
@@ -159,7 +166,7 @@ public class ExternalStorageProvider extends DocumentsProviderCompat {
         Log.d(TAG, "After updating volumes, found " + mRoots.size() + " active roots");
 
         getContext().getContentResolver()
-                .notifyChange(DocumentsContractCompat.buildRootsUri(AUTHORITY), null, false);
+                .notifyChange(DocumentsContractCompat.buildRootsUri(getAuthority()), null, false);
     }
 
     private static String[] resolveRootProjection(String[] projection) {
@@ -549,7 +556,7 @@ public class ExternalStorageProvider extends DocumentsProviderCompat {
             super(columnNames);
 
             final Uri notifyUri = DocumentsContractCompat.buildChildDocumentsUri(
-                    AUTHORITY, docId);
+                    getAuthority(), docId);
             setNotificationUri(getContext().getContentResolver(), notifyUri);
 
             mFile = file;

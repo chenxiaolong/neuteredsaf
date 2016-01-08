@@ -28,7 +28,7 @@ public class MountReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         final ContentProviderClient client = context.getContentResolver()
-                .acquireContentProviderClient(ExternalStorageProvider.AUTHORITY);
+                .acquireContentProviderClient(ExternalStorageProvider.getAuthority());
         try {
             ((ExternalStorageProvider) client.getLocalContentProvider()).updateVolumes();
         } finally {

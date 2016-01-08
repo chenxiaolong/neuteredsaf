@@ -34,19 +34,13 @@ import io.noobdev.neuteredsaf.compat.DocumentsContractCompat.Root;
 public class RecentsProvider extends ContentProvider {
     private static final String TAG = "RecentsProvider";
 
-    private static final String AUTHORITY = "io.noobdev.neuteredsaf.recents";
+    private static final String AUTHORITY_SUFFIX = ".neuteredsaf.recents";
 
     private static final UriMatcher sMatcher = new UriMatcher(UriMatcher.NO_MATCH);
+    private static boolean sMatcherInitialized = false;
 
     private static final int URI_STATE = 2;
     private static final int URI_RESUME = 3;
-
-    static {
-        // state/authority/rootId/docId
-        sMatcher.addURI(AUTHORITY, "state/*/*/*", URI_STATE);
-        // resume/packageName
-        sMatcher.addURI(AUTHORITY, "resume/*", URI_RESUME);
-    }
 
     public static final String TABLE_STATE = "state";
     public static final String TABLE_RESUME = "resume";
@@ -65,14 +59,29 @@ public class RecentsProvider extends ContentProvider {
     }
 
     public static Uri buildState(String authority, String rootId, String documentId) {
-        return new Uri.Builder().scheme(ContentResolver.SCHEME_CONTENT).authority(AUTHORITY)
+        return new Uri.Builder().scheme(ContentResolver.SCHEME_CONTENT).authority(getAuthority())
                 .appendPath("state").appendPath(authority).appendPath(rootId).appendPath(documentId)
                 .build();
     }
 
     public static Uri buildResume(String packageName) {
         return new Uri.Builder().scheme(ContentResolver.SCHEME_CONTENT)
-                .authority(AUTHORITY).appendPath("resume").appendPath(packageName).build();
+                .authority(getAuthority()).appendPath("resume").appendPath(packageName).build();
+    }
+
+    public static String getAuthority() {
+        return DocumentsApplication.getApplicationId() + AUTHORITY_SUFFIX;
+    }
+
+    private static UriMatcher getMatcher() {
+        if (!sMatcherInitialized) {
+            // state/authority/rootId/docId
+            sMatcher.addURI(getAuthority(), "state/*/*/*", URI_STATE);
+            // resume/packageName
+            sMatcher.addURI(getAuthority(), "resume/*", URI_RESUME);
+            sMatcherInitialized = true;
+        }
+        return sMatcher;
     }
 
     private DatabaseHelper mHelper;
@@ -116,6 +125,7 @@ public class RecentsProvider extends ContentProvider {
 
     @Override
     public boolean onCreate() {
+        DocumentsApplication.setApplicationId(getContext());
         mHelper = new DatabaseHelper(getContext());
         return true;
     }
@@ -124,7 +134,7 @@ public class RecentsProvider extends ContentProvider {
     public Cursor query(@NonNull Uri uri, String[] projection, String selection,
                         String[] selectionArgs, String sortOrder) {
         final SQLiteDatabase db = mHelper.getReadableDatabase();
-        switch (sMatcher.match(uri)) {
+        switch (getMatcher().match(uri)) {
             case URI_STATE:
                 final String authority = uri.getPathSegments().get(1);
                 final String rootId = uri.getPathSegments().get(2);
@@ -150,7 +160,7 @@ public class RecentsProvider extends ContentProvider {
     public Uri insert(@NonNull Uri uri, ContentValues values) {
         final SQLiteDatabase db = mHelper.getWritableDatabase();
         final ContentValues key = new ContentValues();
-        switch (sMatcher.match(uri)) {
+        switch (getMatcher().match(uri)) {
             case URI_STATE:
                 final String authority = uri.getPathSegments().get(1);
                 final String rootId = uri.getPathSegments().get(2);

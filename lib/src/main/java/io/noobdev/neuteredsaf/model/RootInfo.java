@@ -163,7 +163,7 @@ public class RootInfo implements Durable, Parcelable {
     }
 
     public boolean isExternalStorage() {
-        return ExternalStorageProvider.AUTHORITY.equals(authority);
+        return ExternalStorageProvider.getAuthority().equals(authority);
     }
 
     @Override

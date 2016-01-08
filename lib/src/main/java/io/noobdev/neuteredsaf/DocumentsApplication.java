@@ -34,6 +34,8 @@ import java.lang.reflect.Method;
 public class DocumentsApplication {
     private static final long PROVIDER_ANR_TIMEOUT = 20 * DateUtils.SECOND_IN_MILLIS;
 
+    private static String sApplicationId;
+
     private static WeakReference<Context> sContext;
     private static RootsCache sRoots;
     private static Point sThumbnailsSize;
@@ -74,6 +76,16 @@ public class DocumentsApplication {
         return client;
     }
 
+    public static String getApplicationId() {
+        return sApplicationId;
+    }
+
+    public static void setApplicationId(Context context) {
+        if (sApplicationId == null) {
+            sApplicationId = context.getPackageName();
+        }
+    }
+
     public static void install(Context context) {
         if (sContext != null) {
             throw new IllegalStateException("Tried to call install() twice!");
@@ -81,6 +93,8 @@ public class DocumentsApplication {
 
         Context applicationContext = context.getApplicationContext();
         sContext = new WeakReference<>(applicationContext);
+
+        setApplicationId(context);
 
         final ActivityManager am = (ActivityManager)
                 applicationContext.getSystemService(Context.ACTIVITY_SERVICE);

@@ -98,9 +98,9 @@ public class RootsCache {
         protected Void doInBackground(Void... params) {
             final long start = SystemClock.elapsedRealtime();
 
-            mTaskRoots.putAll(ExternalStorageProvider.AUTHORITY,
+            mTaskRoots.putAll(ExternalStorageProvider.getAuthority(),
                     loadRootsForAuthority(mContext.getContentResolver(),
-                            ExternalStorageProvider.AUTHORITY));
+                            ExternalStorageProvider.getAuthority()));
 
             final ContentResolver resolver = mContext.getContentResolver();
 
@@ -143,7 +143,7 @@ public class RootsCache {
     }
 
     public RootInfo getDefaultRoot() {
-        return getRootOneshot(ExternalStorageProvider.AUTHORITY,
+        return getRootOneshot(ExternalStorageProvider.getAuthority(),
                 ExternalStorageProvider.ROOT_ID_PRIMARY_EMULATED);
     }
 
