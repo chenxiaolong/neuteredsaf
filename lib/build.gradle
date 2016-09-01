@@ -15,7 +15,7 @@ repositories {
 
 android {
     compileSdkVersion 24
-    buildToolsVersion "24.0.0"
+    buildToolsVersion "24.0.2"
 
     defaultConfig {
         minSdkVersion 17
@@ -26,7 +26,7 @@ android {
 }
 
 dependencies {
-    compile 'com.android.support:support-v4:24.0.0'
-    compile 'com.android.support:appcompat-v7:24.0.0'
+    compile 'com.android.support:support-v4:24.2.0'
+    compile 'com.android.support:appcompat-v7:24.2.0'
     compile group: 'com.google.guava', name: 'guava', version: '19.0'
 }
