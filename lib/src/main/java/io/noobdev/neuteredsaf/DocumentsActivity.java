@@ -85,6 +85,7 @@ import static io.noobdev.neuteredsaf.DirectoryFragment.ANIM_SIDE;
 import static io.noobdev.neuteredsaf.DirectoryFragment.ANIM_UP;
 import static io.noobdev.neuteredsaf.DocumentsActivity.State.ACTION_CREATE;
 import static io.noobdev.neuteredsaf.DocumentsActivity.State.ACTION_OPEN;
+import static io.noobdev.neuteredsaf.DocumentsActivity.State.ACTION_OPEN_TREE;
 import static io.noobdev.neuteredsaf.DocumentsActivity.State.MODE_GRID;
 import static io.noobdev.neuteredsaf.DocumentsActivity.State.MODE_LIST;
 
@@ -176,6 +177,8 @@ public class DocumentsActivity extends AppCompatActivity {
             final String mimeType = getIntent().getType();
             final String title = getIntent().getStringExtra(Intent.EXTRA_TITLE);
             SaveFragment.show(getFragmentManager(), mimeType, title);
+        } else if (mState.action == ACTION_OPEN_TREE) {
+            PickFragment.show(getFragmentManager());
         }
 
         if (mState.action == ACTION_OPEN || mState.action == ACTION_CREATE) {
@@ -198,6 +201,8 @@ public class DocumentsActivity extends AppCompatActivity {
             mState.action = ACTION_OPEN;
         } else if (ProviderConstants.ACTION_CREATE_DOCUMENT.equals(action)) {
             mState.action = ACTION_CREATE;
+        } else if (ProviderConstants.ACTION_OPEN_DOCUMENT_TREE.equals(action)) {
+            mState.action = ACTION_OPEN_TREE;
         }
 
         if (mState.action == ACTION_OPEN) {
@@ -328,7 +333,7 @@ public class DocumentsActivity extends AppCompatActivity {
 
     public void updateActionBar() {
         if (mRootsToolbar != null) {
-            if (mState.action == ACTION_OPEN) {
+            if (mState.action == ACTION_OPEN || mState.action == ACTION_OPEN_TREE) {
                 mRootsToolbar.setTitle(R.string.title_open);
             } else if (mState.action == ACTION_CREATE) {
                 mRootsToolbar.setTitle(R.string.title_save);
@@ -492,7 +497,7 @@ public class DocumentsActivity extends AppCompatActivity {
         sortSize.setVisible(mState.showSize);
 
         boolean searchVisible;
-        if (mState.action == ACTION_CREATE) {
+        if (mState.action == ACTION_CREATE || mState.action == ACTION_OPEN_TREE) {
             createDir.setVisible(cwd != null && cwd.isCreateSupported());
             searchVisible = false;
 
@@ -750,6 +755,15 @@ public class DocumentsActivity extends AppCompatActivity {
             }
         }
 
+        if (mState.action == ACTION_OPEN_TREE) {
+            final PickFragment pick = PickFragment.get(fm);
+            if (pick != null) {
+                final CharSequence displayName = (mState.stack.size() <= 1) ? root.title
+                        : cwd.displayName;
+                pick.setPickTarget(cwd, displayName);
+            }
+        }
+
         final RootsFragment roots = RootsFragment.get(fm);
         if (roots != null) {
             roots.onCurrentRootChanged();
@@ -848,6 +862,12 @@ public class DocumentsActivity extends AppCompatActivity {
 
     public void onSaveRequested(String mimeType, String displayName) {
         new CreateFinishTask(mimeType, displayName).executeOnExecutor(getCurrentExecutor());
+    }
+
+    public void onPickRequested(DocumentInfo pickTarget) {
+        final Uri viaUri = DocumentsContractCompat.buildTreeDocumentUri(pickTarget.authority,
+                pickTarget.documentId);
+        new PickFinishTask(viaUri).executeOnExecutor(getCurrentExecutor());
     }
 
     private void saveStackBlocking() {
@@ -956,6 +976,25 @@ public class DocumentsActivity extends AppCompatActivity {
         }
     }
 
+    private class PickFinishTask extends AsyncTask<Void, Void, Void> {
+        private final Uri mUri;
+
+        public PickFinishTask(Uri uri) {
+            mUri = uri;
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            saveStackBlocking();
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            onFinished(mUri);
+        }
+    }
+
     public static class State implements android.os.Parcelable {
         public int action;
         public String[] acceptMimes;
@@ -985,6 +1024,7 @@ public class DocumentsActivity extends AppCompatActivity {
 
         public static final int ACTION_OPEN = 1;
         public static final int ACTION_CREATE = 2;
+        public static final int ACTION_OPEN_TREE = 4;
 
         public static final int MODE_UNKNOWN = 0;
         public static final int MODE_LIST = 1;

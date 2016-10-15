@@ -216,10 +216,13 @@ public class RootsCache {
         final List<RootInfo> matching = Lists.newArrayList();
         for (RootInfo root : roots) {
             final boolean supportsCreate = (root.flags & Root.FLAG_SUPPORTS_CREATE) != 0;
+            final boolean supportsIsChild = (root.flags & Root.FLAG_SUPPORTS_IS_CHILD) != 0;
             final boolean empty = (root.flags & Root.FLAG_EMPTY) != 0;
 
             // Exclude read-only devices when creating
             if (state.action == State.ACTION_CREATE && !supportsCreate) continue;
+            // Exclude roots that don't support directory picking
+            if (state.action == State.ACTION_OPEN_TREE && !supportsIsChild) continue;
             // Only show empty roots when creating
             if (state.action != State.ACTION_CREATE && empty) continue;
 

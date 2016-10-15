@@ -457,6 +457,17 @@ public final class DocumentsContractCompat {
     }
 
     /**
+     * Build URI representing access to descendant documents of the given
+     * {@link Document#COLUMN_DOCUMENT_ID}.
+     *
+     * @see #getTreeDocumentId(Uri)
+     */
+    public static Uri buildTreeDocumentUri(String authority, String documentId) {
+        return new Uri.Builder().scheme(ContentResolver.SCHEME_CONTENT).authority(authority)
+                .appendPath(PATH_TREE).appendPath(documentId).build();
+    }
+
+    /**
      * Build URI representing the target {@link Document#COLUMN_DOCUMENT_ID} in
      * a document provider. When queried, a provider will return a single row
      * with columns defined by {@link Document}.
