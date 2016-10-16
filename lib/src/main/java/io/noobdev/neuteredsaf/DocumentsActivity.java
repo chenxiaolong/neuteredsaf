@@ -181,7 +181,8 @@ public class DocumentsActivity extends AppCompatActivity {
             PickFragment.show(getFragmentManager());
         }
 
-        if (mState.action == ACTION_OPEN || mState.action == ACTION_CREATE) {
+        if (mState.action == ACTION_OPEN || mState.action == ACTION_CREATE
+                || mState.action == ACTION_OPEN_TREE) {
             RootsFragment.show(getFragmentManager());
         }
 
